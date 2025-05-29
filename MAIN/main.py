@@ -11,7 +11,12 @@ def tokenize(expr):
             if number:
                 tokens.append(number)
                 number = ''
-            tokens.append(char)
+
+            if char == "!" and tokens and tokens[-1] == "!":
+                tokens[-1] = "!!"
+            
+            else:
+                tokens.append(char)
     
         elif char.isspace():
             if number:
@@ -42,14 +47,18 @@ def parse_factor(tokens):
     else:
         value = int(token)
 
-    while tokens and tokens[0] == "!":
-        tokens.pop(0)
+    while tokens and tokens[0] in ("!", "!!"):
+        op = tokens.pop(0)
         
         if not isinstance(value, int) or value < 0:
             raise ValueError("Factorial only works on non-negative integers")
         
-        value = factorial(value)
-    
+        if op == "!":
+            value = factorial(value)
+        
+        elif op == "!!":
+            value = double_facorial(value)
+
     return value
 
 
@@ -95,6 +104,7 @@ def parse_power(tokens):
 
     return value
 
+
 def factorial(n):
     if n == 0 or n == 1:
         return 1
@@ -104,6 +114,21 @@ def factorial(n):
     for i in range(2, n + 1):
         result *= i
     
+    return result
+
+
+def double_facorial(n):
+    if n < 0:
+        raise ValueError("Double factorial not defined for negative numbers")
+    
+    if n == 0 or n == 1:
+        return 1
+    
+    result = 1
+    
+    for i in range(n, 0, -2):
+        result *= i
+
     return result
 
 
