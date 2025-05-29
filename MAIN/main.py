@@ -1,5 +1,25 @@
 def tokenize(expr):
-    return expr.strip().split()
+    tokens = []
+    number = ''
+    for char in expr:
+        if char.isdigit():
+            number += char
+        elif char in "+-*/":
+            if number:
+                tokens.append(number)
+                number = ''
+            tokens.append(char)
+        elif char.isspace():
+            if number:
+                tokens.append(number)
+                number = ''
+        else:
+            raise ValueError(f"Invalid character: {char}")
+    
+    if number:
+        tokens.append(number)
+    
+    return tokens
 
 def evaluate(tokens):
     if len(tokens) != 3:
