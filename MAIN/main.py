@@ -1,3 +1,4 @@
+# Converts input to tokens
 def tokenize(expr):
     tokens = []
     number = ''
@@ -6,7 +7,7 @@ def tokenize(expr):
         if char.isdigit():
             number += char
     
-        elif char in "+-*/()^":
+        elif char in "+-*/()^!":
             if number:
                 tokens.append(number)
                 number = ''
@@ -27,6 +28,9 @@ def tokenize(expr):
 
 
 def parse_factor(tokens):
+    if not tokens:
+        raise ValueError("Unexpected end of input")
+    
     token = tokens.pop(0)
 
     if token == "(":
@@ -34,9 +38,19 @@ def parse_factor(tokens):
 
         if not tokens or tokens.pop(0) != ")":
             raise ValueError("Expected ')'")
-        return value
     
-    return int(token)
+    else:
+        value = int(token)
+
+    while tokens and tokens[0] == "!":
+        tokens.pop(0)
+        
+        if not isinstance(value, int) or value < 0:
+            raise ValueError("Factorial only works on non-negative integers")
+        
+        value = factorial(value)
+    
+    return value
 
 
 def parse_term(tokens):
@@ -81,6 +95,17 @@ def parse_power(tokens):
 
     return value
 
+def factorial(n):
+    if n == 0 or n == 1:
+        return 1
+    
+    result = 1
+    
+    for i in range(2, n + 1):
+        result *= i
+    
+    return result
+
 
 def evaluate(tokens):
     tokens = tokens[:]
@@ -92,6 +117,7 @@ def evaluate(tokens):
     return result
     
 
+# CLI screen and input handler
 while True:
     try:
         line = input(">>> ")
