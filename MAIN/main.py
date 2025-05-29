@@ -1,18 +1,22 @@
 def tokenize(expr):
     tokens = []
     number = ''
+    
     for char in expr:
         if char.isdigit():
             number += char
+    
         elif char in "+-*/":
             if number:
                 tokens.append(number)
                 number = ''
             tokens.append(char)
+    
         elif char.isspace():
             if number:
                 tokens.append(number)
                 number = ''
+    
         else:
             raise ValueError(f"Invalid character: {char}")
     
@@ -21,30 +25,55 @@ def tokenize(expr):
     
     return tokens
 
-def evaluate(tokens):
-    if len(tokens) != 3:
-        raise ValueError("Only simple expressions like '1 + 2' are currntly supported.")
-    
-    left = int(tokens[0])
-    op = tokens[1]
-    right = int(tokens[2])
 
-    if op == "+":
-        return left + right
-    elif op == "-":
-        return left - right
-    elif op == "*":
-        return left * right
-    elif op == "/":
-        return left / right
-    else:
-        raise ValueError(f"Unknown operator: {op}")
+def parse_factor(tokens):
+    token = tokens.pop(0)
+    return int(token)
+
+
+def parse_term(tokens):
+    value = parse_factor(tokens)
     
+    while tokens and tokens[0] in ("*", "/"):
+        op = tokens.pop(0)
+        right = parse_factor(tokens)
+
+        if op == "*":
+            value *= right
+
+        else:
+            value /= right
+    
+    return value
+
+
+def parse_expression(tokens):
+    value = parse_term(tokens)
+    
+    while tokens and tokens[0] in ("+", "-"):
+        op = tokens.pop(0)
+        right = parse_term(tokens)
+    
+        if op == "+":
+            value += right
+
+        else:
+            value -= right
+    
+    return value
+
+
+def evaluate(tokens):
+    tokens = tokens[:]
+    return parse_expression(tokens)
+
+
 while True:
     try:
         line = input(">>> ")
         tokens = tokenize(line)
         result = evaluate(tokens)
         print(result)
+    
     except Exception as e:
         print("Error:", e)
