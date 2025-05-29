@@ -6,7 +6,7 @@ def tokenize(expr):
         if char.isdigit():
             number += char
     
-        elif char in "+-*/()":
+        elif char in "+-*/()^":
             if number:
                 tokens.append(number)
                 number = ''
@@ -40,7 +40,7 @@ def parse_factor(tokens):
 
 
 def parse_term(tokens):
-    value = parse_factor(tokens)
+    value = parse_power(tokens)
     
     while tokens and tokens[0] in ("*", "/"):
         op = tokens.pop(0)
@@ -68,6 +68,17 @@ def parse_expression(tokens):
         else:
             value -= right
     
+    return value
+
+
+def parse_power(tokens):
+    value = parse_factor(tokens)
+
+    while tokens and tokens[0] == "^":
+        tokens.pop(0)
+        right = parse_power(tokens)
+        value = value ** right
+
     return value
 
 
