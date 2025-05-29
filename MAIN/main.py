@@ -6,7 +6,7 @@ def tokenize(expr):
         if char.isdigit():
             number += char
     
-        elif char in "+-*/":
+        elif char in "+-*/()":
             if number:
                 tokens.append(number)
                 number = ''
@@ -28,6 +28,14 @@ def tokenize(expr):
 
 def parse_factor(tokens):
     token = tokens.pop(0)
+
+    if token == "(":
+        value = parse_expression(tokens)
+
+        if not tokens or tokens.pop(0) != ")":
+            raise ValueError("Expected ')'")
+        return value
+    
     return int(token)
 
 
