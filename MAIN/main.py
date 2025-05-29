@@ -12,8 +12,15 @@ def tokenize(expr):
                 tokens.append(number)
                 number = ''
 
-            if char == "!" and tokens and tokens[-1] == "!":
-                tokens[-1] = "!!"
+            if char == "!" and tokens:
+                if tokens[-1] == "!!":
+                    tokens[-1] = "!!!"
+                
+                elif tokens[-1] == "!":
+                    tokens[-1] = "!!"
+                
+                else:
+                    tokens.append("!")
             
             else:
                 tokens.append(char)
@@ -32,6 +39,7 @@ def tokenize(expr):
     return tokens
 
 
+# Parses
 def parse_factor(tokens):
     if not tokens:
         raise ValueError("Unexpected end of input")
@@ -47,7 +55,7 @@ def parse_factor(tokens):
     else:
         value = int(token)
 
-    while tokens and tokens[0] in ("!", "!!"):
+    while tokens and tokens[0] in ("!", "!!", "!!!"):
         op = tokens.pop(0)
         
         if not isinstance(value, int) or value < 0:
@@ -58,6 +66,9 @@ def parse_factor(tokens):
         
         elif op == "!!":
             value = double_facorial(value)
+
+        elif op == "!!!":
+            value = triple_factorial(value)
 
     return value
 
@@ -105,6 +116,7 @@ def parse_power(tokens):
     return value
 
 
+# Calculates factorials
 def factorial(n):
     if n == 0 or n == 1:
         return 1
@@ -129,6 +141,21 @@ def double_facorial(n):
     for i in range(n, 0, -2):
         result *= i
 
+    return result
+
+
+def triple_factorial(n):
+    if n < 0:
+        raise ValueError("Triple factorial no defined for negative numbers")
+    
+    if n == 0 or n == 1 or n == 2:
+        return 1
+    
+    result = 1
+
+    for i in range(n, 0, -3):
+        result *= i
+    
     return result
 
 
