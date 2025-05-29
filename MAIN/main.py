@@ -65,8 +65,13 @@ def parse_expression(tokens):
 
 def evaluate(tokens):
     tokens = tokens[:]
-    return parse_expression(tokens)
-
+    result = parse_expression(tokens)
+    
+    if isinstance(result, float) and result.is_integer():
+        return int(result)
+    
+    return result
+    
 
 while True:
     try:
