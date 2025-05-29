@@ -2,15 +2,31 @@
 def tokenize(expr):
     tokens = []
     number = ''
+    identifier = ''
     
     for char in expr:
         if char.isdigit():
+            if identifier:
+                tokens.append(identifier)
+                identifier = ''
+            
             number += char
+        
+        elif char.isalpha():
+            if number:
+                tokens.append(number)
+                number = ''
+            
+            identifier += char
     
         elif char in "+-*/()^!":
             if number:
                 tokens.append(number)
                 number = ''
+            
+            if identifier:
+                tokens.append(identifier)
+                identifier = ''
 
             if char == "!" and tokens:
                 if tokens[-1] == "!!":
@@ -29,15 +45,25 @@ def tokenize(expr):
             if number:
                 tokens.append(number)
                 number = ''
+            
+            if identifier:
+                tokens.append(identifier)
+                identifier = ''
     
         else:
             raise ValueError(f"Invalid character: {char}")
     
     if number:
         tokens.append(number)
+
+    if identifier:
+        tokens.append(identifier)
     
     return tokens
 
+
+# Variables dictionary
+variables = {}
 
 # Parses
 def parse_factor(tokens):
@@ -53,7 +79,15 @@ def parse_factor(tokens):
             raise ValueError("Expected ')'")
     
     else:
-        value = int(token)
+        if token.isdigit():
+            value = int(token)
+        
+        else:
+            if token in variables:
+                value = variables[token]
+            
+            else:
+                raise ValueError(f"Undefined variable: {token}")
 
     while tokens and tokens[0] in ("!", "!!", "!!!"):
         op = tokens.pop(0)
@@ -173,9 +207,24 @@ def evaluate(tokens):
 while True:
     try:
         line = input(">>> ")
-        tokens = tokenize(line)
-        result = evaluate(tokens)
-        print(result)
+        if "=" in line:
+            var_name, expr = line.split("=", 1)
+            var_name = var_name.strip()
+            expr = expr.strip()
+
+            if not var_name.isalpha():
+                raise ValueError("Invalid variable name")
+            
+            
+            tokens = tokenize(expr)
+            value = evaluate(tokens)
+            variables[var_name] = value
+            print(f"{var_name} = {value}")
+        
+        else:
+            tokens = tokenize(line)
+            result = evaluate(tokens)
+            print(result)
     
     except Exception as e:
         print("Error:", e)
