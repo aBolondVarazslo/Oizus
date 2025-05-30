@@ -3,70 +3,96 @@ def tokenize(expr):
     tokens = []
     number = ''
     identifier = ''
-    
-    for char in expr:
-        if char.isdigit():
-            if identifier:
-                tokens.append(identifier)
-                identifier = ''
-            
-            number += char
+    in_string = False
+    string_delim = ''
+    string_buffer = ''
+    i = 0
+    while i < len(expr):
+        char = expr[i]
 
-
-        elif char.isalpha():
-            if number:
-                tokens.append(number)
-                number = ''
-            
-            identifier += char
-    
-
-        elif char in "+-*/()^!":
-            if number:
-                tokens.append(number)
-                number = ''
-            
-            if identifier:
-                tokens.append(identifier)
-                identifier = ''
-
-            if char == "!" and tokens:
-                if tokens[-1] == "!!":
-                    tokens[-1] = "!!!"
-                
-                elif tokens[-1] == "!":
-                    tokens[-1] = "!!"
-                
+        if in_string:
+            if char == '\\':  # Escape character
+                i += 1
+                if i < len(expr):
+                    string_buffer += expr[i]
                 else:
-                    tokens.append("!")
-
-
-            else:
-                tokens.append(char)
-    
-
-        elif char.isspace():
-            if number:
-                tokens.append(number)
-                number = ''
+                    raise ValueError("Unfinished escape sequence in string")
             
-            if identifier:
-                tokens.append(identifier)
-                identifier = ''
-    
+            elif char == string_delim:
+                tokens.append(string_delim + string_buffer + string_delim)
+                string_buffer = ''
+                in_string = False
+            
+            else:
+                string_buffer += char
 
         else:
-            raise ValueError(f"Invalid character: {char}")
+            if char.isdigit():
+                if identifier:
+                    tokens.append(identifier)
+                    identifier = ''
+                number += char
 
+            elif char.isalpha():
+                if number:
+                    tokens.append(number)
+                    number = ''
+                identifier += char
+
+            elif char in "+-*/()^!":
+                if number:
+                    tokens.append(number)
+                    number = ''
+                if identifier:
+                    tokens.append(identifier)
+                    identifier = ''
+
+                if char == "!" and tokens:
+                    if tokens[-1] == "!!":
+                        tokens[-1] = "!!!"
+                    elif tokens[-1] == "!":
+                        tokens[-1] = "!!"
+                    else:
+                        tokens.append("!")
+                else:
+                    tokens.append(char)
+
+            elif char in ('"', "'"):
+                # Start of string literal
+                if number:
+                    tokens.append(number)
+                    number = ''
+                if identifier:
+                    tokens.append(identifier)
+                    identifier = ''
+
+                in_string = True
+                string_delim = char
+                string_buffer = ''
+
+            elif char.isspace():
+                if number:
+                    tokens.append(number)
+                    number = ''
+                if identifier:
+                    tokens.append(identifier)
+                    identifier = ''
+
+            else:
+                raise ValueError(f"Invalid character: {char}")
+
+        i += 1
+
+    if in_string:
+        raise ValueError("Unterminated string literal")
 
     if number:
         tokens.append(number)
-
-
     if identifier:
         tokens.append(identifier)
-    
+
     return tokens
+
 
 
 # Variables dictionary
@@ -82,7 +108,12 @@ def parse_factor(tokens):
 
     if token == "-":
         value = parse_factor(tokens)
-        return -value
+        if isinstance(value, (int, float)):
+            return -value
+        
+        else:
+            raise ValueError("Unary negative can only be applied to numbers")
+
 
     if token == "(":
         value = parse_expression(tokens)
@@ -90,10 +121,12 @@ def parse_factor(tokens):
         if not tokens or tokens.pop(0) != ")":
             raise ValueError("Expected ')'")
     
+
     else:
         if token.isdigit():
             value = int(token)
         
+
         else:
             if token in variables:
                 value = variables[token]
@@ -101,8 +134,11 @@ def parse_factor(tokens):
             elif token in constants:
                 value = constants[token]
             
+            elif isinstance(token, str) and (token.startswith('"') or token.startswith("'")):
+                value = token[1:-1]
+            
             else:
-                raise ValueError(f"Undefined variable: {token}")
+                raise ValueError(f"Undefined variable or invalid token: {token}")
 
 
     while tokens and tokens[0] in ("!", "!!", "!!!"):
