@@ -208,6 +208,9 @@ def triple_factorial(n):
 def evaluate(tokens):
     tokens = tokens[:]
     result = parse_expression(tokens)
+
+    if tokens:
+        raise ValueError(f"Unexpected input after expression: {' '.join(tokens)}")
     
     if isinstance(result, float) and result.is_integer():
         return int(result)
