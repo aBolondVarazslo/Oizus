@@ -11,7 +11,8 @@ def tokenize(expr):
                 identifier = ''
             
             number += char
-        
+
+
         elif char.isalpha():
             if number:
                 tokens.append(number)
@@ -19,6 +20,7 @@ def tokenize(expr):
             
             identifier += char
     
+
         elif char in "+-*/()^!":
             if number:
                 tokens.append(number)
@@ -37,10 +39,12 @@ def tokenize(expr):
                 
                 else:
                     tokens.append("!")
-            
+
+
             else:
                 tokens.append(char)
     
+
         elif char.isspace():
             if number:
                 tokens.append(number)
@@ -50,11 +54,14 @@ def tokenize(expr):
                 tokens.append(identifier)
                 identifier = ''
     
+
         else:
             raise ValueError(f"Invalid character: {char}")
-    
+
+
     if number:
         tokens.append(number)
+
 
     if identifier:
         tokens.append(identifier)
@@ -64,6 +71,7 @@ def tokenize(expr):
 
 # Variables dictionary
 variables = {}
+constants = {}
 
 # Parses
 def parse_factor(tokens):
@@ -85,9 +93,13 @@ def parse_factor(tokens):
         else:
             if token in variables:
                 value = variables[token]
+
+            elif token in constants:
+                value = constants[token]
             
             else:
                 raise ValueError(f"Undefined variable: {token}")
+
 
     while tokens and tokens[0] in ("!", "!!", "!!!"):
         op = tokens.pop(0)
@@ -206,8 +218,32 @@ def evaluate(tokens):
 # CLI screen and input handler
 while True:
     try:
-        line = input(">>> ")
-        if "=" in line:
+        line = input(">>> ").strip()
+
+        if not line:
+            continue
+
+
+        if line.startswith("const "):
+            rest = line[len("const "):].strip()
+
+            if "=" not in rest:
+                raise ValueError("Expected '=' in constant definition")
+
+            const_name, expr = rest.split("=", 1)
+            const_name = const_name.strip()
+            expr = expr.strip()
+
+            if not const_name.isalpha():
+                raise ValueError("Invalid constant name")
+            
+            tokens = tokenize(expr)
+            value = evaluate(tokens)
+            constants[const_name] = value
+            print(f"{const_name} (constant) = {value}")
+
+
+        elif "=" in line:
             var_name, expr = line.split("=", 1)
             var_name = var_name.strip()
             expr = expr.strip()
@@ -215,16 +251,17 @@ while True:
             if not var_name.isalpha():
                 raise ValueError("Invalid variable name")
             
-            
             tokens = tokenize(expr)
             value = evaluate(tokens)
             variables[var_name] = value
             print(f"{var_name} = {value}")
         
+
         else:
             tokens = tokenize(line)
             result = evaluate(tokens)
             print(result)
     
+
     except Exception as e:
         print("Error:", e)
