@@ -80,6 +80,10 @@ def parse_factor(tokens):
     
     token = tokens.pop(0)
 
+    if token == "-":
+        value = parse_factor(tokens)
+        return -value
+
     if token == "(":
         value = parse_expression(tokens)
 
