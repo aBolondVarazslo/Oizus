@@ -5,7 +5,8 @@ from nulldel import *
 while True:
     try:
         line = input(">>> ").strip()
-        handle_line(line)
+        line_iter = iter(line)
+        handle_line(line, line_iter)
     
     except Exception as e:
         print("Error:", e)
