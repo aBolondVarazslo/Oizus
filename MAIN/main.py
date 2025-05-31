@@ -111,11 +111,11 @@ def tokenize(expr):
     return tokens
 
 
-
-
-# Variables dictionary
+# Dictionaries
 variables = {}
 constants = {}
+keywords = {"and", "or", "not", "if", "else", "while", "for"}
+
 
 # Parses
 def parse_factor(tokens):
@@ -328,6 +328,9 @@ while True:
 
             if not const_name.isalpha():
                 raise ValueError("Invalid constant name")
+            
+            if const_name in keywords:
+                raise ValueError(f"'{const_name}' is a reserved keyword and cannot be used for variables or constants")
 
             tokens = tokenize(expr)
             value = evaluate(tokens)
@@ -348,6 +351,12 @@ while True:
 
                 if not var_name.isalpha():
                     raise ValueError("Invalid variable name")
+                
+                if var_name in keywords:
+                    raise ValueError(f"'{var_name}' is a reserved keyword and cannot be used for variables or constants")
+                
+                if var_name in constants:
+                    raise ValueError(f"'{var_name}' is a constant and cannot be changed")
 
                 tokens = tokenize(expr)
                 value = evaluate(tokens)
