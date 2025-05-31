@@ -40,7 +40,7 @@ def tokenize(expr):
                     number = ''
                 identifier += char
 
-            elif char in "+-*/()^!<>=:":
+            elif char in "+-*/()^!<>=":
                 if number:
                     tokens.append(number)
                     number = ''
