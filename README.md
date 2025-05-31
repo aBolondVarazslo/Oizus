@@ -23,9 +23,6 @@ python interpreter.py
 ## Limitations
 
 - No `elif` support yet
-
 - No functions or loops
-
 - No complex parsing (indentation not enforced)
-
 - Blocks must end with `done` keyword
