@@ -1,10 +1,14 @@
 from main import *
 from nulldel import *
 
+def handle_lines(lines_iter):
+    for line in lines_iter:
+        handle_line(line.strip(), lines_iter)
+
 def handle_line(line, lines_iter):
     if line.startswith("#"):
         return
-    
+
     if not line:
         return
 
@@ -45,8 +49,7 @@ def handle_line(line, lines_iter):
         block_lines = read_block(lines_iter)
 
         if condition_result:
-            for blk_line in block_lines:
-                handle_line(blk_line, lines_iter)
+            handle_lines(iter(block_lines))
 
     else:
         equal_pos = line.find('=')
@@ -77,14 +80,22 @@ def handle_line(line, lines_iter):
             result = evaluate(tokens)
             print(result)
 
-
 def read_block(lines_iter):
     block_lines = []
+    depth = 0
 
     for line in lines_iter:
-        line = line.strip()
-        if line == "done":
-            break
-        block_lines.append(line)
-    
+        stripped = line.strip()
+
+        if stripped.startswith("if ") and stripped.endswith(":"):
+            depth += 1
+
+        if stripped == "done":
+            if depth == 0:
+                break
+            else:
+                depth -= 1
+
+        block_lines.append(stripped)
+
     return block_lines
