@@ -46,6 +46,29 @@ def handle_line(line, lines_iter):
         condition_tokens = tokenize(condition_expr)
         condition_result = evaluate(condition_tokens)
 
+        if_block = read_block(lines_iter)
+
+        else_block = []
+        
+        try:
+            next_line = next(lines_iter).strip()
+            
+            if next_line == "else:":
+                else_block = read_block(lines_iter)
+            
+            else:
+                lines_iter = iter([next_line] + list(lines_iter))
+        except StopIteration:
+            pass
+
+        if condition_result:
+            for blk_line in if_block:
+                handle_line(blk_line, lines_iter)
+        
+        else:
+            for blk_line in else_block:
+                handle_line(blk_line, lines_iter)
+
         block_lines = read_block(lines_iter)
 
         if condition_result:
@@ -99,3 +122,7 @@ def read_block(lines_iter):
         block_lines.append(stripped)
 
     return block_lines
+
+
+
+    
