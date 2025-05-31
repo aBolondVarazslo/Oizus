@@ -6,12 +6,17 @@ script_path = input("Enter the script filename: ").strip()
 
 try:
     with open(script_path, "r") as file:
-        for line in file:
+        lines_iter = iter(file)
+        
+        for line in lines_iter:
             line = line.strip()
+            
             if line:
                 try:
-                    handle_line(line)
+                    handle_line(line, lines_iter)
+                
                 except Exception as e:
                     print(f"Error on line '{line}':", e)
+
 except FileNotFoundError:
     print(f"File '{script_path}' not found.")

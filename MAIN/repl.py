@@ -6,5 +6,6 @@ while True:
     try:
         line = input(">>> ").strip()
         handle_line(line)
+    
     except Exception as e:
         print("Error:", e)

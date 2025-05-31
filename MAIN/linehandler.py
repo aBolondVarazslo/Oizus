@@ -1,7 +1,7 @@
 from main import *
 from nulldel import *
 
-def handle_line(line):
+def handle_line(line, lines_iter):
     if line.startswith("#"):
         return
     
@@ -37,6 +37,17 @@ def handle_line(line):
         var_name = line[len("del "):].strip()
         delete_variable(var_name, variables, constants)
 
+    elif line.startswith("if ") and line.endswith(":"):
+        condition_expr = line[3:-1].strip()
+        condition_tokens = tokenize(condition_expr)
+        condition_result = evaluate(condition_tokens)
+
+        block_lines = read_block(lines_iter)
+
+        if condition_result:
+            for blk_line in block_lines:
+                handle_line(blk_line, lines_iter)
+
     else:
         equal_pos = line.find('=')
 
@@ -65,3 +76,15 @@ def handle_line(line):
             tokens = tokenize(line)
             result = evaluate(tokens)
             print(result)
+
+
+def read_block(lines_iter):
+    block_lines = []
+
+    for line in lines_iter:
+        line = line.strip()
+        if line == "done":
+            break
+        block_lines.append(line)
+    
+    return block_lines
