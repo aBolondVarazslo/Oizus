@@ -28,6 +28,40 @@ while True:
             constants[const_name] = value
             print(f"{const_name} (constant) = {value}")
 
+        
+        elif line.startswith("null "):
+            var_name = line[len("null "):].strip()
+
+            if not var_name.isalpha():
+                raise ValueError("Invalid variable name")
+            
+            if var_name in constants:
+                raise ValueError(f"'{const_name}' is a constant and cannot be changed")
+            
+            if var_name in variables:
+                variables[var_name] = None
+                print(f"'{var_name}' reset to null")
+
+            else:
+                variables[var_name] = None
+                print(f"'{var_name}' set to null")
+
+        elif line.startswith("del "):
+            var_name = line[len("del "):].strip()
+
+            if not var_name.isalpha():
+                raise ValueError("Invalid variable name")
+            
+            if var_name in constants:
+                raise ValueError(f"'{var_name}' is a constant and cannot be changed")
+            
+            if var_name in variables:
+                del variables[var_name]
+                print(f"'{var_name}' deleted")
+            
+            else:
+                print(f"'{var_name}' does not exist")
+
         else:
             equal_pos = line.find('=')
 

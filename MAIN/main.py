@@ -114,7 +114,7 @@ def tokenize(expr):
 # Dictionaries
 variables = {}
 constants = {}
-keywords = {"and", "or", "not", "if", "else", "while", "for"}
+keywords = {"and", "or", "not", "if", "else", "while", "for", "null", "del"}
 
 
 # Parses math
