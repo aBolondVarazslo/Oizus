@@ -117,7 +117,7 @@ constants = {}
 keywords = {"and", "or", "not", "if", "else", "while", "for"}
 
 
-# Parses
+# Parses math
 def parse_factor(tokens):
     if not tokens:
         raise ValueError("Unexpected end of input")
@@ -134,7 +134,7 @@ def parse_factor(tokens):
 
 
     if token == "(":
-        value = parse_expression(tokens)
+        value = parse_logical_or(tokens)
 
         if not tokens or tokens.pop(0) != ")":
             raise ValueError("Expected ')'")
@@ -252,6 +252,39 @@ def parse_power(tokens):
     return value
 
 
+# Parses logic
+def parse_logical_not(tokens):
+    if tokens and tokens[0] == "not":
+        tokens.pop(0)
+        value = parse_logical_not(tokens)
+        return not value
+    
+    else:
+        return parse_comparison(tokens)
+
+
+def parse_logical_and(tokens):
+    value = parse_logical_not(tokens)
+
+    while tokens and tokens[0] == "and":
+        tokens.pop(0)
+        right = parse_logical_not(tokens)
+        value = value and right
+
+    return value
+
+
+def parse_logical_or(tokens):
+    value = parse_logical_and(tokens)
+
+    while tokens and tokens[0] == "or":
+        tokens.pop(0)
+        right = parse_logical_and(tokens)
+        value = value or right
+    
+    return value
+
+
 # Calculates factorials
 def factorial(n):
     if n == 0 or n == 1:
@@ -297,7 +330,7 @@ def triple_factorial(n):
 
 def evaluate(tokens):
     tokens = tokens[:]
-    result = parse_comparison(tokens)
+    result = parse_logical_or(tokens)
 
     if tokens:
         raise ValueError(f"Unexpected input after expression: {' '.join(tokens)}")
