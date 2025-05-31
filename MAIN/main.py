@@ -7,6 +7,7 @@ def tokenize(expr):
     string_delim = ''
     string_buffer = ''
     i = 0
+
     while i < len(expr):
         char = expr[i]
 
@@ -17,12 +18,12 @@ def tokenize(expr):
                     string_buffer += expr[i]
                 else:
                     raise ValueError("Unfinished escape sequence in string")
-            
+
             elif char == string_delim:
                 tokens.append(string_delim + string_buffer + string_delim)
                 string_buffer = ''
                 in_string = False
-            
+
             else:
                 string_buffer += char
 
@@ -39,7 +40,7 @@ def tokenize(expr):
                     number = ''
                 identifier += char
 
-            elif char in "+-*/()^!":
+            elif char in "+-*/()^!<>=:":
                 if number:
                     tokens.append(number)
                     number = ''
@@ -47,18 +48,34 @@ def tokenize(expr):
                     tokens.append(identifier)
                     identifier = ''
 
-                if char == "!" and tokens:
-                    if tokens[-1] == "!!":
-                        tokens[-1] = "!!!"
-                    elif tokens[-1] == "!":
-                        tokens[-1] = "!!"
+                # Handle multi-character comparison operators
+                if char in ('=', '!', '<', '>') and i + 1 < len(expr):
+                    next_char = expr[i + 1]
+                    two_char = char + next_char
+
+                    if two_char in ('==', '!=', '<=', '>='):
+                        tokens.append(two_char)
+                        i += 1
+                    elif char == '!':
+                        # Handle multiple factorials
+                        count = 1
+                        while i + 1 < len(expr) and expr[i + 1] == '!':
+                            count += 1
+                            i += 1
+                        tokens.append('!' * count)
                     else:
-                        tokens.append("!")
+                        tokens.append(char)
+                elif char == '!':
+                    # Handle multiple factorials
+                    count = 1
+                    while i + 1 < len(expr) and expr[i + 1] == '!':
+                        count += 1
+                        i += 1
+                    tokens.append('!' * count)
                 else:
                     tokens.append(char)
 
             elif char in ('"', "'"):
-                # Start of string literal
                 if number:
                     tokens.append(number)
                     number = ''
@@ -92,6 +109,7 @@ def tokenize(expr):
         tokens.append(identifier)
 
     return tokens
+
 
 
 
@@ -195,6 +213,34 @@ def parse_expression(tokens):
     return value
 
 
+def parse_comparison(tokens):
+    value = parse_expression(tokens)
+
+    while tokens and tokens[0] in ("==", "!=", ">", "<", ">=", "<="):
+        op = tokens.pop(0)
+        right = parse_expression(tokens)
+
+        if op == "==":
+            value = value == right
+        
+        elif op == "!=":
+            value = value != right
+        
+        elif op == ">":
+            value = value > right
+        
+        elif op == "<":
+            value = value < right
+        
+        elif op == ">=":
+            value = value >= right
+        
+        elif op == "<=":
+            value = value <= right
+        
+    return value
+
+
 def parse_power(tokens):
     value = parse_factor(tokens)
 
@@ -251,7 +297,7 @@ def triple_factorial(n):
 
 def evaluate(tokens):
     tokens = tokens[:]
-    result = parse_expression(tokens)
+    result = parse_comparison(tokens)
 
     if tokens:
         raise ValueError(f"Unexpected input after expression: {' '.join(tokens)}")
@@ -270,7 +316,6 @@ while True:
         if not line:
             continue
 
-
         if line.startswith("const "):
             rest = line[len("const "):].strip()
 
@@ -283,32 +328,37 @@ while True:
 
             if not const_name.isalpha():
                 raise ValueError("Invalid constant name")
-            
+
             tokens = tokenize(expr)
             value = evaluate(tokens)
             constants[const_name] = value
             print(f"{const_name} (constant) = {value}")
 
-
-        elif "=" in line:
-            var_name, expr = line.split("=", 1)
-            var_name = var_name.strip()
-            expr = expr.strip()
-
-            if not var_name.isalpha():
-                raise ValueError("Invalid variable name")
-            
-            tokens = tokenize(expr)
-            value = evaluate(tokens)
-            variables[var_name] = value
-            print(f"{var_name} = {value}")
-        
-
         else:
-            tokens = tokenize(line)
-            result = evaluate(tokens)
-            print(result)
-    
+            equal_pos = line.find('=')
+
+            # Check if '=' is present and is a single assignment (not part of ==, !=, <=, >=)
+            if equal_pos != -1 and not (
+                (equal_pos + 1 < len(line) and line[equal_pos + 1] == '=') or
+                (equal_pos > 0 and line[equal_pos - 1] in ('!', '<', '>'))
+            ):
+                # This is an assignment
+                var_name = line[:equal_pos].strip()
+                expr = line[equal_pos + 1:].strip()
+
+                if not var_name.isalpha():
+                    raise ValueError("Invalid variable name")
+
+                tokens = tokenize(expr)
+                value = evaluate(tokens)
+                variables[var_name] = value
+                print(f"{var_name} = {value}")
+
+            else:
+                # Otherwise, treat as an expression (including comparisons)
+                tokens = tokenize(line)
+                result = evaluate(tokens)
+                print(result)
 
     except Exception as e:
         print("Error:", e)
