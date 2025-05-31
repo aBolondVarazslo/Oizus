@@ -183,7 +183,11 @@ def parse_expression(tokens):
         right = parse_term(tokens)
     
         if op == "+":
-            value += right
+            if isinstance(value, str) or isinstance(right, str):
+                value = str(value) + str(right)
+            
+            else:
+                value += right
 
         else:
             value -= right
