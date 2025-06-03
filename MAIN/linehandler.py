@@ -1,15 +1,12 @@
 from main import *
 from nulldel import *
 
-def handle_lines(lines_iter):
-    for line in lines_iter:
-        handle_line(line.strip(), lines_iter)
+def handle_lines(lines_deque):
+    while lines_deque:
+        handle_line(lines_deque.popleft().strip(), lines_deque)
 
-def handle_line(line, lines_iter):
-    if line.startswith("#"):
-        return
-
-    if not line:
+def handle_line(line, lines_deque):
+    if line.startswith("#") or not line or line == "else:" or line == "done":
         return
 
     if line.startswith("const "):
@@ -46,33 +43,19 @@ def handle_line(line, lines_iter):
         condition_tokens = tokenize(condition_expr)
         condition_result = evaluate(condition_tokens)
 
-        if_block = read_block(lines_iter)
+        if_block = read_block(lines_deque)
 
         else_block = []
         
-        try:
-            next_line = next(lines_iter).strip()
-            
-            if next_line == "else:":
-                else_block = read_block(lines_iter)
-            
-            else:
-                lines_iter = iter([next_line] + list(lines_iter))
-        except StopIteration:
-            pass
-
-        if condition_result:
-            for blk_line in if_block:
-                handle_line(blk_line, lines_iter)
+        if lines_deque and lines_deque[0].strip() == "else:":
+            lines_deque.popleft()
+            else_block = read_block(lines_deque)
         
-        else:
-            for blk_line in else_block:
-                handle_line(blk_line, lines_iter)
+        chosen_block = if_block if condition_result else else_block
 
-        block_lines = read_block(lines_iter)
+        for blk_line in chosen_block:
+            handle_line(blk_line, lines_deque)
 
-        if condition_result:
-            handle_lines(iter(block_lines))
 
     else:
         equal_pos = line.find('=')
@@ -103,26 +86,32 @@ def handle_line(line, lines_iter):
             result = evaluate(tokens)
             print(result)
 
-def read_block(lines_iter):
+def read_block(lines_deque):
     block_lines = []
     depth = 0
 
-    for line in lines_iter:
+    while lines_deque:
+        line = lines_deque.popleft()
         stripped = line.strip()
 
         if stripped.startswith("if ") and stripped.endswith(":"):
             depth += 1
+            block_lines.append(stripped)
+            continue
 
         if stripped == "done":
             if depth == 0:
                 break
             else:
                 depth -= 1
+                block_lines.append(stripped)
+                continue
+
+        if depth == 0 and stripped in ("else:", "else"):
+            lines_deque.appendleft(stripped)
+            break
 
         block_lines.append(stripped)
 
+
     return block_lines
-
-
-
-    

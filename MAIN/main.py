@@ -124,6 +124,9 @@ def parse_factor(tokens):
     
     token = tokens.pop(0)
 
+    if token == "done":
+        return None
+
     if token == "-":
         value = parse_factor(tokens)
         if isinstance(value, (int, float)):
