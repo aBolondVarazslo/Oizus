@@ -58,7 +58,12 @@ def handle_line(line, lines_deque):
 
         for blk_line in chosen_block:
             handle_line(blk_line, lines_deque)
-
+    
+    elif line.startswith("out "):
+        expr = line[len("out "):].strip()
+        tokens = tokenize(expr)
+        value = evaluate(tokens)
+        print(value)
 
     else:
         equal_pos = line.find('=')
@@ -87,7 +92,6 @@ def handle_line(line, lines_deque):
         else:
             tokens = tokenize(line)
             result = evaluate(tokens)
-            print(result)
 
 def read_block(lines_deque):
     block_lines = []

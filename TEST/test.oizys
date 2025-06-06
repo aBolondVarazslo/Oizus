@@ -14,3 +14,7 @@ else:
 52
 21
 10
+b
+out b
+out "jack"
+out 3
