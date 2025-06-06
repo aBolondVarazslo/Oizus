@@ -64,6 +64,20 @@ def handle_line(line, lines_deque):
         tokens = tokenize(expr)
         value = evaluate(tokens)
         print(value)
+    
+    elif line.startswith("while ") and line.endswith(":"):
+        condition_expr = line[6:-1].strip()
+        loop_block = read_block(lines_deque)
+
+        while True:
+            condition_tokens = tokenize(condition_expr)
+            condition_result = evaluate(condition_tokens)
+
+            if not condition_result:
+                break
+
+            for blk_line in loop_block:
+                handle_line(blk_line, lines_deque)
 
     else:
         equal_pos = line.find('=')
@@ -106,9 +120,14 @@ def read_block(lines_deque):
             block_lines.append(stripped)
             continue
 
+        if stripped.startswith("while ") and stripped.endswith(":"):
+            depth += 1
+            block_lines.append(stripped)
+            continue
+
         if stripped == "done":
             if depth == 0:
-                break
+                return block_lines
             else:
                 depth -= 1
                 block_lines.append(stripped)
@@ -116,9 +135,8 @@ def read_block(lines_deque):
 
         if depth == 0 and stripped in ("else:", "else"):
             lines_deque.appendleft(stripped)
-            break
+            return block_lines
 
         block_lines.append(stripped)
 
-
-    return block_lines
+    raise ValueError("Expected 'done' to close block but reached end of input")

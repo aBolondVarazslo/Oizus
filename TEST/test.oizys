@@ -11,10 +11,12 @@ else:
     green = "yellow"
     done
 
-52
-21
-10
 b
 out b
 out "jack"
 out 3
+a = 1
+
+while 3 == 3:
+    a = a + 1
+    done

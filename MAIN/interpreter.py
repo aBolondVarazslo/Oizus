@@ -16,5 +16,8 @@ except FileNotFoundError:
 except ValueError as e:
     print(f"Error: {e}")
 
+except KeyboardInterrupt:
+    print("Keyboard interrupt")
+
 except Exception as e:
     print(f"Unexpected error: {e}")
