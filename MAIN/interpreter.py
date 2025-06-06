@@ -12,3 +12,9 @@ try:
 
 except FileNotFoundError:
     print(f"File '{script_path}' not found.")
+
+except ValueError as e:
+    print(f"Error: {e}")
+
+except Exception as e:
+    print(f"Unexpected error: {e}")

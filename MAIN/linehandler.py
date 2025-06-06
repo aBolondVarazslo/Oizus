@@ -6,8 +6,11 @@ def handle_lines(lines_deque):
         handle_line(lines_deque.popleft().strip(), lines_deque)
 
 def handle_line(line, lines_deque):
-    if line.startswith("#") or not line or line == "else:" or line == "done":
+    if line.startswith("#") or not line or line == "done":
         return
+    
+    if line == "else:":
+        raise ValueError("Unexpected 'else' without matching 'if'")
 
     if line.startswith("const "):
         rest = line[len("const "):].strip()
